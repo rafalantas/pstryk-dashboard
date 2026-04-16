@@ -1,0 +1,17 @@
+# Nigdy nie commituj sekretów!
+.env
+.env.local
+.env.*.local
+
+# Docker
+.dockerignore
+
+# Edytory
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# System
+.DS_Store
+Thumbs.db
