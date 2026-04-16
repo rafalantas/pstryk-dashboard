@@ -4,24 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pstryk Dashboard</title>
-<!-- env.js generowany przez entrypoint.sh ze zmiennych Docker -->
 <script src="/env.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg: #080b10; --s1: #0e1319; --s2: #141a24; --s3: #1c2534;
-  --border: rgba(255,255,255,0.06); --border2: rgba(255,255,255,0.12);
-  --accent: #f0e040; --sell: #38bdf8; --green: #4ade80; --red: #f87171;
-  --purple: #a78bfa; --text: #e2e8f0; --muted: #64748b; --muted2: #94a3b8;
-  --l1: #f87171; --l2: #fb923c; --l3: #4ade80;
-}
+:root{--bg:#080b10;--s1:#0e1319;--s2:#141a24;--s3:#1c2534;--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.12);--accent:#f0e040;--sell:#38bdf8;--green:#4ade80;--red:#f87171;--purple:#a78bfa;--text:#e2e8f0;--muted:#64748b;--muted2:#94a3b8;--l1:#f87171;--l2:#fb923c;--l3:#4ade80}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;min-height:100vh}
-
-/* AUTH */
 #auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem}
-.auth-box{width:100%;max-width:520px}
+.auth-box{width:100%;max-width:480px}
 .logo{display:flex;align-items:center;gap:12px;margin-bottom:2.5rem}
 .logo-icon{width:38px;height:38px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center}
 .logo-icon svg{width:18px;fill:#080b10}
@@ -34,34 +25,26 @@ label{display:block;font-size:.7rem;font-weight:600;text-transform:uppercase;let
 input[type=text],input[type=password]{width:100%;background:var(--s1);border:1px solid var(--border2);border-radius:10px;padding:12px 14px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.85rem;outline:none;transition:border .2s}
 input:focus{border-color:var(--accent)}
 .btn-primary{width:100%;background:var(--accent);color:#080b10;border:none;border-radius:10px;padding:13px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.95rem;cursor:pointer;transition:opacity .2s,transform .1s;margin-top:.5rem}
-.btn-primary:hover{opacity:.9} .btn-primary:active{transform:scale(.98)} .btn-primary:disabled{opacity:.4;cursor:not-allowed}
-.auth-err{color:var(--red);font-size:.8rem;margin-top:.75rem;font-family:'JetBrains Mono',monospace;display:none}
-.env-hint{margin-top:1.25rem;padding:.9rem 1.1rem;background:var(--s1);border-radius:10px;border-left:3px solid var(--s3);font-size:.75rem;color:var(--muted);font-family:'JetBrains Mono',monospace;line-height:1.65}
-.env-hint strong{color:var(--muted2)}
-.env-badge{display:inline-block;padding:2px 7px;border-radius:5px;background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.2);font-size:.65rem;margin-bottom:6px}
-.env-badge.missing{background:rgba(100,116,139,.08);color:var(--muted);border-color:var(--border)}
-.divider{display:flex;align-items:center;gap:12px;margin:1.5rem 0}
-.divider-line{flex:1;height:1px;background:var(--border2)}
-.divider span{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
-.hint-box{padding:1rem 1.2rem;background:var(--s1);border-radius:10px;border-left:3px solid var(--accent)}
+.btn-primary:hover{opacity:.9}.btn-primary:active{transform:scale(.98)}.btn-primary:disabled{opacity:.4;cursor:not-allowed}
+.auth-err{color:var(--red);font-size:.8rem;margin-top:.75rem;font-family:'JetBrains Mono',monospace;display:none;line-height:1.6}
+.hint-box{margin-top:1.5rem;padding:1rem 1.2rem;background:var(--s1);border-radius:10px;border-left:3px solid var(--accent)}
 .hint-box p{font-size:.78rem;color:var(--muted2);line-height:1.7;font-family:'JetBrains Mono',monospace}
 .hint-box strong{color:var(--text)}
-
-/* DASHBOARD */
+.env-badge{display:inline-block;padding:2px 8px;border-radius:5px;font-size:.65rem;font-family:'JetBrains Mono',monospace;margin-bottom:6px;margin-right:4px}
+.env-ok{background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.2)}
+.env-miss{background:rgba(100,116,139,.08);color:var(--muted);border:1px solid var(--border)}
 #dashboard{display:none;min-height:100vh}
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:.9rem 1.5rem;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;background:rgba(8,11,16,.92);backdrop-filter:blur(14px)}
-.topbar-left{display:flex;align-items:center;gap:14px}
 .tlogo{display:flex;align-items:center;gap:9px}
 .tlogo-icon{width:26px;height:26px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center}
 .tlogo-icon svg{width:13px;fill:#080b10}
 .tlogo-text{font-weight:700;font-size:.95rem}
 .tlogo-text span{color:var(--accent)}
-select.ctrl{background:var(--s1);border:1px solid var(--border2);border-radius:7px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.75rem;padding:5px 9px;outline:none;cursor:pointer}
 .topbar-right{display:flex;align-items:center;gap:8px}
 .btn-ctrl{background:transparent;border:1px solid var(--border2);border-radius:7px;color:var(--muted2);cursor:pointer;padding:5px 10px;font-family:'JetBrains Mono',monospace;font-size:.73rem;transition:all .2s}
 .btn-ctrl:hover{color:var(--accent);border-color:rgba(240,224,64,.4)}
 .btn-logout:hover{color:var(--red);border-color:rgba(248,113,113,.4)}
-.main{padding:1.5rem;max-width:1300px;margin:0 auto}
+.main{padding:1.5rem;max-width:1200px;margin:0 auto}
 .tabs{display:flex;gap:4px;margin-bottom:1.5rem;background:var(--s1);padding:4px;border-radius:10px;border:1px solid var(--border);width:fit-content}
 .tab-btn{padding:6px 16px;border-radius:7px;border:none;background:transparent;color:var(--muted2);cursor:pointer;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:.8rem;transition:all .2s}
 .tab-btn.active{background:var(--s3);color:var(--text)}
@@ -72,12 +55,36 @@ select.ctrl{background:var(--s1);border:1px solid var(--border2);border-radius:7
 .dot-err{background:var(--red)}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
 .sec-lbl{font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:.7rem;font-family:'JetBrains Mono',monospace}
-
-/* LOCAL CONNECT */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem}
+.stat{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:1rem 1.1rem}
+.stat.buy-top{border-top:2px solid var(--accent)}
+.stat.sell-top{border-top:2px solid var(--sell)}
+.stat.cost-top{border-top:2px solid var(--purple)}
+.stat-lbl{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.4rem;font-family:'JetBrains Mono',monospace}
+.stat-val{font-size:1.5rem;font-weight:700;letter-spacing:-0.03em;font-family:'JetBrains Mono',monospace}
+.stat-unit{font-size:.72rem;color:var(--muted2);font-weight:400;margin-left:3px}
+.stat-sub{font-size:.7rem;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:4px}
+.badge{display:inline-block;font-size:.62rem;padding:2px 7px;border-radius:4px;font-family:'JetBrains Mono',monospace;text-transform:uppercase;margin-top:5px}
+.badge-cheap{background:rgba(74,222,128,.12);color:var(--green)}
+.badge-exp{background:rgba(248,113,113,.12);color:var(--red)}
+.badge-norm{background:rgba(100,116,139,.1);color:var(--muted2)}
+.chart-card{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:1.2rem 1.4rem;margin-bottom:1.5rem}
+.chart-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem}
+.chart-title{font-size:.88rem;font-weight:600}
+.chart-legend{display:flex;gap:12px}
+.cl-item{display:flex;align-items:center;gap:5px;font-size:.7rem;color:var(--muted2);font-family:'JetBrains Mono',monospace}
+.cl-dot{width:7px;height:7px;border-radius:50%}
+.hours-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:5px;margin-bottom:1.5rem}
+.hcell{background:var(--s2);border:1px solid var(--border);border-radius:7px;padding:7px 5px;text-align:center;font-family:'JetBrains Mono',monospace;cursor:default}
+.hcell.live{border-color:var(--accent);background:rgba(240,224,64,.07)}
+.hcell-hour{font-size:.6rem;color:var(--muted)}
+.hcell-price{font-size:.76rem;font-weight:500;margin-top:2px}
+.hcell.live .hcell-price{color:var(--accent)}
+.hcell-usage{font-size:.62rem;color:var(--muted2);margin-top:1px}
 .local-conn{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:1.1rem 1.3rem;margin-bottom:1.5rem}
 .local-conn-top{display:flex;align-items:center;gap:10px;margin-bottom:.9rem;flex-wrap:wrap}
 .lc-title{font-weight:600;font-size:.88rem}
-.live-badge{font-size:.63rem;font-family:'JetBrains Mono',monospace;padding:3px 8px;border-radius:5px;background:rgba(74,222,128,.12);color:var(--green);border:1px solid rgba(74,222,128,.2);letter-spacing:.06em}
+.live-badge{font-size:.63rem;font-family:'JetBrains Mono',monospace;padding:3px 8px;border-radius:5px;background:rgba(74,222,128,.12);color:var(--green);border:1px solid rgba(74,222,128,.2)}
 .live-badge.off{background:rgba(100,116,139,.1);color:var(--muted);border-color:var(--border)}
 .local-form{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .local-input{background:var(--s2);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.8rem;outline:none;width:210px;transition:border .2s}
@@ -86,10 +93,6 @@ select.ctrl{background:var(--s1);border:1px solid var(--border2);border-radius:7
 .btn-local:hover{border-color:var(--accent);color:var(--accent)}
 .local-note{font-size:.7rem;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:.8rem;line-height:1.65}
 .local-note code{background:var(--s2);padding:1px 5px;border-radius:4px;color:var(--muted2)}
-.env-src{font-size:.65rem;color:var(--green);font-family:'JetBrains Mono',monospace;margin-left:6px}
-
-/* PHASES */
-.phase-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem}
 .phase-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.25rem}
 .phase-card{background:var(--s1);border-radius:14px;border:1px solid var(--border);overflow:hidden}
 .phase-head{padding:10px 14px 8px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)}
@@ -101,15 +104,7 @@ select.ctrl{background:var(--s1);border:1px solid var(--border2);border-radius:7
 .pm-unit{font-size:.65rem;color:var(--muted2);margin-top:2px;font-family:'JetBrains Mono',monospace}
 .pm-bar{height:3px;background:var(--s3);border-radius:2px;margin-top:5px;overflow:hidden}
 .pm-bar-fill{height:100%;border-radius:2px;transition:width .5s ease}
-
-/* TOTALS */
 .total-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem}
-.stat{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:1rem 1.1rem}
-.stat-lbl{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.4rem;font-family:'JetBrains Mono',monospace}
-.stat-val{font-size:1.4rem;font-weight:700;letter-spacing:-0.03em;font-family:'JetBrains Mono',monospace}
-.stat-unit{font-size:.72rem;color:var(--muted2);font-weight:400;margin-left:3px}
-
-/* POWER BARS */
 .power-card{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:1.1rem 1.3rem;margin-bottom:1.5rem}
 .power-card-title{font-size:.85rem;font-weight:600;margin-bottom:1rem}
 .power-bars{display:flex;flex-direction:column;gap:10px}
@@ -119,29 +114,6 @@ select.ctrl{background:var(--s1);border:1px solid var(--border2);border-radius:7
 .pb-fill{height:100%;border-radius:6px;display:flex;align-items:center;padding-left:8px;transition:width .6s ease;min-width:4px}
 .pb-txt{font-size:.7rem;font-weight:600;font-family:'JetBrains Mono',monospace;color:rgba(8,11,16,.85)}
 .pb-total{width:68px;text-align:right;font-size:.75rem;font-weight:600;font-family:'JetBrains Mono',monospace;flex-shrink:0}
-
-/* PRICES */
-.price-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1rem;margin-bottom:1.5rem}
-.price-card{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:1.1rem 1.2rem}
-.price-card.buy{border-top:2px solid var(--accent)} .price-card.sell{border-top:2px solid var(--sell)}
-.pc-lbl{font-size:.66rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.6rem;font-family:'JetBrains Mono',monospace}
-.pc-val{font-size:1.9rem;font-weight:700;letter-spacing:-0.04em;font-family:'JetBrains Mono',monospace}
-.pc-val.buy{color:var(--accent)} .pc-val.sell{color:var(--sell)} .pc-val.nxt{color:var(--purple)}
-.pc-unit{font-size:.7rem;color:var(--muted2)}
-.pc-badge{display:inline-block;margin-top:7px;font-size:.62rem;padding:2px 7px;border-radius:4px;font-family:'JetBrains Mono',monospace;letter-spacing:.05em;text-transform:uppercase}
-.badge-cheap{background:rgba(74,222,128,.12);color:var(--green)} .badge-exp{background:rgba(248,113,113,.12);color:var(--red)} .badge-norm{background:rgba(100,116,139,.1);color:var(--muted2)}
-.chart-card{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:1.2rem 1.4rem;margin-bottom:1.5rem}
-.chart-card-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
-.chart-card-title{font-size:.88rem;font-weight:600}
-.chart-legend{display:flex;gap:12px}
-.cl-item{display:flex;align-items:center;gap:5px;font-size:.7rem;color:var(--muted2);font-family:'JetBrains Mono',monospace}
-.cl-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-.hours-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:5px;margin-bottom:1.5rem}
-.hcell{background:var(--s2);border:1px solid var(--border);border-radius:7px;padding:7px 5px;text-align:center;font-family:'JetBrains Mono',monospace}
-.hcell.current{border-color:var(--accent);background:rgba(240,224,64,.07)} .hcell.cheap{background:rgba(74,222,128,.07);border-color:rgba(74,222,128,.25)} .hcell.expensive{background:rgba(248,113,113,.07);border-color:rgba(248,113,113,.25)}
-.hcell-hour{font-size:.6rem;color:var(--muted)} .hcell-price{font-size:.76rem;font-weight:500;margin-top:2px}
-.hcell.current .hcell-price{color:var(--accent)} .hcell.cheap .hcell-price{color:var(--green)} .hcell.expensive .hcell-price{color:var(--red)}
-.tmr-sep{grid-column:1/-1;text-align:center;font-size:.65rem;color:var(--muted);font-family:'JetBrains Mono',monospace;padding:5px 0 3px;border-top:1px solid var(--border);margin-top:3px}
 .raw-box{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:1rem 1.2rem;margin-bottom:1.5rem}
 .raw-box pre{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--muted2);white-space:pre-wrap;word-break:break-all;max-height:280px;overflow-y:auto}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -158,44 +130,30 @@ select.ctrl{background:var(--s1);border:1px solid var(--border2);border-radius:7
       <div class="logo-text">pstryk<span>.</span>dashboard</div>
     </div>
     <h1>Monitorowanie energii</h1>
-    <p class="auth-sub">// ceny · zużycie · fazy L1 · L2 · L3</p>
-
-    <!-- Status zmiennych środowiskowych -->
-    <div class="env-hint" id="env-status-box">
-      <strong>Zmienne środowiskowe Docker:</strong><br>
-      <span id="env-api-badge" class="env-badge missing">PSTRYK_API_KEY: brak</span>
-      <span id="env-ip-badge" class="env-badge missing">PSTRYK_METER_IP: brak</span>
-    </div>
-
-    <div class="form-group" style="margin-top:1.2rem">
+    <p class="auth-sub">// ceny · zużycie · koszty · fazy L1/L2/L3</p>
+    <div id="env-status" style="margin-bottom:1rem"></div>
+    <div class="form-group">
       <label>Klucz API Pstryk</label>
-      <input type="password" id="api-key" placeholder="token_xxxxxxxxxxxxxxxx" autocomplete="off"/>
+      <input type="password" id="api-key" placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off"/>
     </div>
     <button class="btn-primary" id="login-btn" onclick="handleLogin()">Połącz →</button>
-    <p class="auth-err" id="auth-err">Błędny klucz API lub brak odpowiedzi serwera.</p>
-    <div class="divider"><div class="divider-line"></div><span>dane fazowe L1/L2/L3</span><div class="divider-line"></div></div>
-    <div class="hint-box">
-      <p>
-        <strong>Dane fazowe</strong> pobierane są z lokalnego adresu IP miernika Pstryk.<br>
-        Ustaw <code>PSTRYK_METER_IP</code> w Portainerze — pole zostanie wypełnione automatycznie.<br><br>
-        <strong>Klucz API:</strong> Pstryk → Konto → Urządzenia i integracje → Klucz API
-      </p>
+    <p class="auth-err" id="auth-err"></p>
+    <div class="hint-box" style="margin-top:1.25rem">
+      <p><strong>Klucz API:</strong> Pstryk app → Konto → Urządzenia i integracje → Klucz API<br><br>
+      <strong>Dane fazowe L1/L2/L3</strong> — dostępne po podaniu lokalnego IP miernika w zakładce Licznik.</p>
     </div>
   </div>
 </div>
 
 <div id="dashboard">
   <div class="topbar">
-    <div class="topbar-left">
-      <div class="tlogo">
-        <div class="tlogo-icon"><svg viewBox="0 0 24 24" width="13" fill="#080b10"><path d="M13 2L4.5 13.5H11L9 22l10.5-13H14z"/></svg></div>
-        <span class="tlogo-text">pstryk<span>.</span></span>
-      </div>
-      <select class="ctrl" id="meter-select" onchange="onMeterChange()"></select>
+    <div class="tlogo">
+      <div class="tlogo-icon"><svg viewBox="0 0 24 24" width="13" fill="#080b10"><path d="M13 2L4.5 13.5H11L9 22l10.5-13H14z"/></svg></div>
+      <span class="tlogo-text">pstryk<span>.</span></span>
     </div>
     <div class="topbar-right">
-      <span id="refresh-icon" style="font-size:.75rem;color:var(--muted2);font-family:'JetBrains Mono',monospace;margin-right:2px">↻</span>
-      <button class="btn-ctrl" onclick="refreshCloud()">odśwież</button>
+      <span id="refresh-icon" style="font-size:.75rem;color:var(--muted2);font-family:'JetBrains Mono',monospace">↻</span>
+      <button class="btn-ctrl" onclick="refreshAll()">odśwież</button>
       <button class="btn-ctrl btn-logout" onclick="logout()">wyloguj</button>
     </div>
   </div>
@@ -208,40 +166,119 @@ select.ctrl{background:var(--s1);border:1px solid var(--border2);border-radius:7
     </div>
 
     <div class="tabs">
-      <button class="tab-btn active" onclick="showTab('meter')">⚡ Licznik</button>
+      <button class="tab-btn active" onclick="showTab('today')">📊 Dziś</button>
       <button class="tab-btn" onclick="showTab('prices')">📈 Ceny</button>
+      <button class="tab-btn" onclick="showTab('meter')">⚡ Licznik</button>
       <button class="tab-btn" onclick="showTab('debug')">🔍 Debug</button>
     </div>
 
-    <!-- TAB LICZNIK -->
-    <div id="tab-meter">
+    <!-- TAB: DZIŚ -->
+    <div id="tab-today">
+      <div class="sec-lbl">Podsumowanie dnia</div>
+      <div class="stats-grid">
+        <div class="stat buy-top">
+          <div class="stat-lbl">Zużycie dziś</div>
+          <div class="stat-val" id="t-import">—<span class="stat-unit">kWh</span></div>
+        </div>
+        <div class="stat sell-top">
+          <div class="stat-lbl">Eksport OZE dziś</div>
+          <div class="stat-val" id="t-export">—<span class="stat-unit">kWh</span></div>
+        </div>
+        <div class="stat">
+          <div class="stat-lbl">Bilans energii</div>
+          <div class="stat-val" id="t-balance">—<span class="stat-unit">kWh</span></div>
+        </div>
+        <div class="stat cost-top">
+          <div class="stat-lbl">Koszt energii</div>
+          <div class="stat-val" id="t-cost">—<span class="stat-unit">PLN</span></div>
+          <div class="stat-sub" id="t-cost-sub"></div>
+        </div>
+        <div class="stat">
+          <div class="stat-lbl">Dystrybucja</div>
+          <div class="stat-val" id="t-dist">—<span class="stat-unit">PLN</span></div>
+        </div>
+        <div class="stat">
+          <div class="stat-lbl">VAT</div>
+          <div class="stat-val" id="t-vat">—<span class="stat-unit">PLN</span></div>
+        </div>
+        <div class="stat">
+          <div class="stat-lbl">Razem brutto</div>
+          <div class="stat-val" id="t-total">—<span class="stat-unit">PLN</span></div>
+        </div>
+        <div class="stat">
+          <div class="stat-lbl">Ślad węglowy</div>
+          <div class="stat-val" id="t-carbon">—<span class="stat-unit">kg CO₂</span></div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-hdr">
+          <div class="chart-title">Zużycie godzinowe — dziś</div>
+          <div class="chart-legend">
+            <div class="cl-item"><div class="cl-dot" style="background:var(--accent)"></div>import kWh</div>
+            <div class="cl-item"><div class="cl-dot" style="background:var(--sell)"></div>eksport kWh</div>
+          </div>
+        </div>
+        <canvas id="usage-chart" style="max-height:220px"></canvas>
+      </div>
+    </div>
+
+    <!-- TAB: CENY -->
+    <div id="tab-prices" style="display:none">
+      <div class="sec-lbl">Aktualna godzina</div>
+      <div class="stats-grid">
+        <div class="stat buy-top">
+          <div class="stat-lbl">Cena zakupu</div>
+          <div class="stat-val" id="p-buy">—<span class="stat-unit">PLN/kWh</span></div>
+          <div id="p-badge"></div>
+        </div>
+        <div class="stat sell-top">
+          <div class="stat-lbl">Cena sprzedaży</div>
+          <div class="stat-val" id="p-sell">—<span class="stat-unit">PLN/kWh</span></div>
+        </div>
+        <div class="stat">
+          <div class="stat-lbl">Następna godzina</div>
+          <div class="stat-val" id="p-next">—<span class="stat-unit">PLN/kWh</span></div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-hdr">
+          <div class="chart-title">Ceny godzinowe — dziś i jutro</div>
+          <div class="chart-legend">
+            <div class="cl-item"><div class="cl-dot" style="background:var(--accent)"></div>zakup</div>
+            <div class="cl-item"><div class="cl-dot" style="background:var(--sell)"></div>sprzedaż</div>
+          </div>
+        </div>
+        <canvas id="price-chart" style="max-height:220px"></canvas>
+      </div>
+
+      <div class="sec-lbl">Godziny dziś + jutro</div>
+      <div class="hours-grid" id="hours-grid"></div>
+    </div>
+
+    <!-- TAB: LICZNIK -->
+    <div id="tab-meter" style="display:none">
       <div class="local-conn">
         <div class="local-conn-top">
           <div class="dot" id="ldot" style="background:var(--muted)"></div>
-          <div class="lc-title">Lokalny miernik — dane w czasie rzeczywistym</div>
+          <div class="lc-title">Lokalny miernik — dane fazowe w czasie rzeczywistym</div>
           <div class="live-badge off" id="lbadge">offline</div>
-          <span class="env-src" id="lc-env-src" style="display:none">← z ENV</span>
         </div>
         <div class="local-form">
-          <input class="local-input" id="meter-ip" type="text" placeholder="192.168.1.xxx (IP miernika)"/>
-          <select class="ctrl" id="meter-port" style="width:82px">
-            <option value="80">:80</option>
-            <option value="8080">:8080</option>
-            <option value="443">:443</option>
-            <option value="8443">:8443</option>
+          <input class="local-input" id="meter-ip" type="text" placeholder="192.168.1.xxx"/>
+          <select style="background:var(--s2);border:1px solid var(--border2);border-radius:8px;padding:8px 10px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.8rem;outline:none;cursor:pointer" id="meter-port">
+            <option value="80">:80</option><option value="8080">:8080</option><option value="443">:443</option>
           </select>
           <button class="btn-local" onclick="connectLocal()">Połącz</button>
           <button class="btn-local" id="lstop-btn" style="display:none;color:var(--red)" onclick="stopLocal()">Rozłącz</button>
         </div>
-        <p class="local-note">
-          Miernik Pstryk wystawia lokalne API JSON. IP znajdziesz w routerze lub w aplikacji Pstryk.<br>
-          W kontenerze Docker wystarczy ustawić <code>PSTRYK_METER_IP</code> w Portainerze — pole zostanie wypełnione automatycznie.
-        </p>
+        <p class="local-note">IP miernika znajdziesz w routerze. Ustaw <code>PSTRYK_METER_IP</code> w Portainerze — pole zostanie wypełnione automatycznie.</p>
       </div>
 
-      <div class="phase-hdr">
-        <div class="sec-lbl">Pomiary fazowe</div>
-        <div class="live-badge off" id="phase-badge">oczekiwanie na miernik</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
+        <div class="sec-lbl" style="margin:0">Pomiary fazowe</div>
+        <div class="live-badge off" id="phase-badge">oczekiwanie</div>
       </div>
 
       <div class="phase-grid">
@@ -277,8 +314,8 @@ select.ctrl{background:var(--s1);border:1px solid var(--border2);border-radius:7
       <div class="total-strip">
         <div class="stat"><div class="stat-lbl">Łączna moc</div><div class="stat-val" id="tot-w">—<span class="stat-unit">W</span></div></div>
         <div class="stat"><div class="stat-lbl">Częstotliwość</div><div class="stat-val" id="freq">—<span class="stat-unit">Hz</span></div></div>
-        <div class="stat"><div class="stat-lbl">Dziś zużyto</div><div class="stat-val" id="m-usage">—<span class="stat-unit">kWh</span></div></div>
-        <div class="stat"><div class="stat-lbl">Dziś koszt</div><div class="stat-val" id="m-cost">—<span class="stat-unit">PLN</span></div></div>
+        <div class="stat"><div class="stat-lbl">Zużycie dziś</div><div class="stat-val" id="m-usage">—<span class="stat-unit">kWh</span></div></div>
+        <div class="stat"><div class="stat-lbl">Koszt dziś</div><div class="stat-val" id="m-cost">—<span class="stat-unit">PLN</span></div></div>
       </div>
 
       <div class="power-card">
@@ -291,352 +328,438 @@ select.ctrl{background:var(--s1);border:1px solid var(--border2);border-radius:7
       </div>
     </div>
 
-    <!-- TAB CENY -->
-    <div id="tab-prices" style="display:none">
-      <div class="sec-lbl">Aktualne ceny</div>
-      <div class="price-cards">
-        <div class="price-card buy"><div class="pc-lbl">Zakup (brutto)</div><div class="pc-val buy" id="pc-buy">—</div><div class="pc-unit">PLN/kWh</div><div class="pc-badge" id="pc-badge"></div></div>
-        <div class="price-card sell"><div class="pc-lbl">Sprzedaż OZE</div><div class="pc-val sell" id="pc-sell">—</div><div class="pc-unit">PLN/kWh</div></div>
-        <div class="price-card"><div class="pc-lbl">Następna godzina</div><div class="pc-val nxt" id="pc-next">—</div><div class="pc-unit">PLN/kWh zakup</div></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-card-hdr">
-          <div class="chart-card-title">Ceny godzinowe — dziś i jutro</div>
-          <div class="chart-legend"><div class="cl-item"><div class="cl-dot" style="background:var(--accent)"></div>zakup</div><div class="cl-item"><div class="cl-dot" style="background:var(--sell)"></div>sprzedaż</div></div>
-        </div>
-        <canvas id="price-chart" style="max-height:240px"></canvas>
-      </div>
-      <div class="sec-lbl">Godziny dziś + jutro</div>
-      <div class="hours-grid" id="hours-grid"></div>
-      <div class="total-strip">
-        <div class="stat"><div class="stat-lbl">Dziś zużyto</div><div class="stat-val" id="p-usage">—<span class="stat-unit">kWh</span></div></div>
-        <div class="stat"><div class="stat-lbl">Sprzedaż OZE</div><div class="stat-val" id="p-sell">—<span class="stat-unit">kWh</span></div></div>
-        <div class="stat"><div class="stat-lbl">Bilans</div><div class="stat-val" id="p-balance">—<span class="stat-unit">kWh</span></div></div>
-        <div class="stat"><div class="stat-lbl">Koszt dziś</div><div class="stat-val" id="p-cost">—<span class="stat-unit">PLN</span></div></div>
-      </div>
-    </div>
-
-    <!-- TAB DEBUG -->
+    <!-- TAB: DEBUG -->
     <div id="tab-debug" style="display:none">
-      <div class="sec-lbl">Zmienne środowiskowe (załadowane z env.js)</div>
-      <div class="raw-box"><pre id="raw-env">—</pre></div>
-      <div class="sec-lbl">Cloud API — /prices/</div>
-      <div class="raw-box"><pre id="raw-prices">—</pre></div>
-      <div class="sec-lbl">Cloud API — /unified-metrics/</div>
-      <div class="raw-box"><pre id="raw-metrics">—</pre></div>
-      <div class="sec-lbl">Lokalny miernik — ostatnia odpowiedź</div>
-      <div class="raw-box"><pre id="raw-local">oczekiwanie na połączenie z miernikiem...</pre></div>
+      <div class="sec-lbl">Dziś — /unified-metrics/ (meter_values,cost,carbon)</div>
+      <div class="raw-box"><pre id="raw-today">—</pre></div>
+      <div class="sec-lbl">Ceny dziś — /unified-metrics/ (pricing)</div>
+      <div class="raw-box"><pre id="raw-prices-today">—</pre></div>
+      <div class="sec-lbl">Ceny jutro — /unified-metrics/ (pricing)</div>
+      <div class="raw-box"><pre id="raw-prices-tomorrow">—</pre></div>
+      <div class="sec-lbl">Lokalny miernik</div>
+      <div class="raw-box"><pre id="raw-local">oczekiwanie...</pre></div>
     </div>
   </div>
 </div>
 
 <script>
-const BASE = '/pstryk-api';
-let apiKey = '', meters = [], selectedMeter = null, priceChart = null, localInterval = null;
+// ─── CONFIG ──────────────────────────────────────────────────────────────────
+const PROXY = '/pstryk-api';  // nginx proxy → https://api.pstryk.pl/integrations
+const TZ = 'Europe/Warsaw';
 
-/* === HELPERS === */
+let apiKey = '';
+let usageChart = null, priceChart = null, localInterval = null;
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
 const $ = id => document.getElementById(id);
-function setText(id,v){const e=$(id);if(e)e.textContent=v;}
-function setBar(id,pct){const e=$(id);if(e)e.style.width=Math.min(Math.max(pct,0),100)+'%';}
-const fmt=(v,d=1)=>v!=null?(+v).toFixed(d):'—';
+const setText = (id, v) => { const e=$(id); if(e) e.textContent=v; };
+const setBar = (id, pct) => { const e=$(id); if(e) e.style.width=Math.min(Math.max(pct,0),100)+'%'; };
+const fmt = (v, d=2) => v!=null ? (+v).toFixed(d) : '—';
 
-/* === ENV CONFIG (wstrzykiwane przez Docker) === */
-function getEnvConfig() {
-  const cfg = window.PSTRYK_CONFIG || {};
-  // Jeśli zmienna nie została wstrzyknięta (template nie zastąpiony), traktuj jako pustą
-  return {
-    apiKey:    (cfg.apiKey    && !cfg.apiKey.startsWith('$'))    ? cfg.apiKey    : '',
-    meterIp:   (cfg.meterIp   && !cfg.meterIp.startsWith('$'))   ? cfg.meterIp   : '',
-    meterPort: (cfg.meterPort && !cfg.meterPort.startsWith('$')) ? cfg.meterPort : '80',
-  };
+function todayUTC() {
+  const now = new Date();
+  const y = now.getUTCFullYear(), m = String(now.getUTCMonth()+1).padStart(2,'0'), d = String(now.getUTCDate()).padStart(2,'0');
+  return { start: `${y}-${m}-${d}T00:00:00Z`, end: `${y}-${m}-${d}T23:59:59Z` };
+}
+function tomorrowUTC() {
+  const tom = new Date(Date.now() + 86400000);
+  const y = tom.getUTCFullYear(), m = String(tom.getUTCMonth()+1).padStart(2,'0'), d = String(tom.getUTCDate()).padStart(2,'0');
+  return { start: `${y}-${m}-${d}T00:00:00Z`, end: `${y}-${m}-${d}T23:59:59Z` };
 }
 
-/* === AUTH === */
-function getH(){return{'Authorization':`Token ${apiKey}`,'Content-Type':'application/json'};}
-async function apiGet(path){
-  let r;
-  try {
-    r = await fetch(`${BASE}${path}`, {headers: getH()});
-  } catch(e) {
-    throw new Error('NETWORK: ' + e.message);
+// ─── API ─────────────────────────────────────────────────────────────────────
+function apiHeaders() {
+  return { 'Authorization': apiKey, 'Accept': 'application/json' };
+}
+
+async function fetchMetrics(metrics, windowStart, windowEnd, resolution='hour', useTz=false) {
+  const params = new URLSearchParams({
+    metrics,
+    resolution,
+    window_start: windowStart,
+    window_end: windowEnd,
+  });
+  if (useTz && resolution !== 'hour') params.set('for_tz', TZ);
+
+  const url = `${PROXY}/meter-data/unified-metrics/?${params}`;
+  const r = await fetch(url, { headers: apiHeaders() });
+  if (!r.ok) {
+    const body = await r.text().catch(()=>'');
+    throw new Error(`HTTP ${r.status}: ${body}`);
   }
-  if (!r.ok) throw new Error('HTTP ' + r.status);
   return r.json();
 }
 
+// ─── AUTH ─────────────────────────────────────────────────────────────────────
 async function handleLogin() {
-  const btn=$('login-btn'), err=$('auth-err');
+  const btn = $('login-btn'), err = $('auth-err');
   apiKey = $('api-key').value.trim();
   if (!apiKey) return;
-  btn.disabled=true; btn.textContent='Łączenie...'; err.style.display='none';
+  btn.disabled = true; btn.textContent = 'Łączenie...'; err.style.display = 'none';
   try {
-    const d = await apiGet('/meters/');
-    meters = Array.isArray(d) ? d : (d.results || []);
-    if (!meters.length) throw new Error('Brak liczników na koncie');
+    const { start, end } = todayUTC();
+    await fetchMetrics('meter_values', start, end, 'hour');
     localStorage.setItem('pk', apiKey);
     initDash();
   } catch(e) {
-    let msg = 'Błąd: ' + e.message;
-    if (e.message.includes('NETWORK')) msg = 'Brak połączenia z proxy nginx. Sprawdź czy kontener działa.';
-    else if (e.message.includes('401')) msg = 'Błąd 401 — nieprawidłowy klucz API.';
-    else if (e.message.includes('403')) msg = 'Błąd 403 — brak uprawnień.';
-    else if (e.message.includes('404')) msg = 'Błąd 404 — nie znaleziono endpointu. Sprawdź nginx.conf.';
-    else if (e.message.includes('502') || e.message.includes('503')) msg = 'Błąd 502/503 — nginx nie może połączyć się z api.pstryk.pl.';
-    err.textContent = msg;
-    err.style.display='block';
-    btn.disabled=false; btn.textContent='Połącz →';
+    let msg = `Błąd: ${e.message}`;
+    if (e.message.includes('403')) msg = 'Błąd 403 — nieprawidłowy klucz API lub brak aktywnej umowy.';
+    if (e.message.includes('401')) msg = 'Błąd 401 — nieprawidłowy klucz API.';
+    if (e.message.includes('NETWORK') || e.message.includes('fetch')) msg = 'Brak połączenia z proxy. Sprawdź czy kontener działa.';
+    err.textContent = msg; err.style.display = 'block';
+    btn.disabled = false; btn.textContent = 'Połącz →';
   }
 }
 
-function logout(){
-  localStorage.removeItem('pk');localStorage.removeItem('pip');
-  stopLocal();apiKey='';meters=[];selectedMeter=null;
-  $('dashboard').style.display='none';
-  $('auth-screen').style.display='flex';
-  $('api-key').value='';
+function logout() {
+  localStorage.removeItem('pk'); localStorage.removeItem('pip');
+  stopLocal(); apiKey = '';
+  $('dashboard').style.display = 'none';
+  $('auth-screen').style.display = 'flex';
+  $('api-key').value = '';
 }
 
-/* === DASHBOARD === */
-function initDash(){
-  $('auth-screen').style.display='none';
-  $('dashboard').style.display='block';
-  const sel=$('meter-select');
-  sel.innerHTML=meters.map(m=>`<option value="${m.meter_id||m.id}">${m.address||m.meter_id||m.id}</option>`).join('');
-  selectedMeter=meters[0].meter_id||meters[0].id;
-  refreshCloud();
-  setInterval(refreshCloud,5*60*1000);
-
-  // Auto-connect to local meter if IP is set
-  const ip=$('meter-ip').value.trim();
-  if(ip) connectLocal();
+// ─── DASHBOARD ───────────────────────────────────────────────────────────────
+function initDash() {
+  $('auth-screen').style.display = 'none';
+  $('dashboard').style.display = 'block';
+  refreshAll();
+  setInterval(refreshAll, 5 * 60 * 1000);
+  const savedIp = localStorage.getItem('pip');
+  if (savedIp) { $('meter-ip').value = savedIp; connectLocal(); }
 }
 
-function onMeterChange(){selectedMeter=$('meter-select').value;refreshCloud();}
-
-function setStatus(txt,s='ok'){
-  $('status-txt').textContent=txt;
-  $('status-dot').className='dot '+(s==='ok'?'dot-ok':s==='load'?'dot-load':'dot-err');
+function setStatus(txt, s='ok') {
+  $('status-txt').textContent = txt;
+  $('status-dot').className = 'dot ' + (s==='ok'?'dot-ok':s==='load'?'dot-load':'dot-err');
 }
 
-function showTab(name){
-  ['meter','prices','debug'].forEach((t,i)=>{
-    $(`tab-${t}`).style.display=t===name?'':'none';
-    document.querySelectorAll('.tab-btn')[i].classList.toggle('active',t===name);
+function showTab(name) {
+  ['today','prices','meter','debug'].forEach((t,i) => {
+    $(`tab-${t}`).style.display = t===name ? '' : 'none';
+    document.querySelectorAll('.tab-btn')[i].classList.toggle('active', t===name);
   });
 }
 
-/* === CLOUD API === */
-async function refreshCloud(){
-  const ic=$('refresh-icon');ic.className='spinning';
-  setStatus('Pobieranie danych cloud...','load');
+async function refreshAll() {
+  const ic = $('refresh-icon'); ic.className = 'spinning';
+  setStatus('Pobieranie danych...', 'load');
+  const { start, end } = todayUTC();
+  const tom = tomorrowUTC();
+
   try {
-    const[prices,metrics]=await Promise.allSettled([
-      apiGet(`/meters/${selectedMeter}/prices/`),
-      apiGet(`/meters/${selectedMeter}/unified-metrics/`),
+    const [today, pricesToday, pricesTomorrow] = await Promise.allSettled([
+      fetchMetrics('meter_values,cost,carbon', start, end, 'hour'),
+      fetchMetrics('pricing', start, end, 'hour'),
+      fetchMetrics('pricing', tom.start, tom.end, 'hour'),
     ]);
-    const pd=prices.status==='fulfilled'?prices.value:null;
-    const md=metrics.status==='fulfilled'?metrics.value:null;
-    $('raw-prices').textContent=JSON.stringify(pd,null,2);
-    $('raw-metrics').textContent=JSON.stringify(md,null,2);
-    if(pd) renderPrices(pd);
-    if(md) renderMetrics(md);
-    setStatus('Cloud OK');
-    $('last-update').textContent=new Date().toLocaleTimeString('pl-PL');
-  }catch(e){setStatus('Błąd połączenia cloud','err');}
-  ic.className='';
+
+    const td = today.status === 'fulfilled' ? today.value : null;
+    const pt = pricesToday.status === 'fulfilled' ? pricesToday.value : null;
+    const ptom = pricesTomorrow.status === 'fulfilled' ? pricesTomorrow.value : null;
+
+    $('raw-today').textContent = JSON.stringify(td, null, 2);
+    $('raw-prices-today').textContent = JSON.stringify(pt, null, 2);
+    $('raw-prices-tomorrow').textContent = JSON.stringify(ptom, null, 2);
+
+    if (td) renderToday(td);
+    if (pt || ptom) renderPrices(pt, ptom);
+
+    setStatus('OK');
+    $('last-update').textContent = new Date().toLocaleTimeString('pl-PL');
+  } catch(e) {
+    setStatus('Błąd: ' + e.message, 'err');
+  }
+  ic.className = '';
 }
 
-function renderPrices(d){
-  const now=new Date(),curH=now.toISOString().slice(0,13);
-  const bt=d.buy?.prices_today||d.prices_today||[];
-  const st=d.sell?.prices_today||[];
-  const bm=d.buy?.prices_tomorrow||d.prices_tomorrow||[];
-  const sm=d.sell?.prices_tomorrow||[];
-  const cur=arr=>arr.find(p=>(p.time||p.start||'').slice(0,13)===curH);
-  const cb=cur(bt),cs=cur(st);
-  const bp=cb?.price??d.current_buy_price??null;
-  const sp=cs?.price??d.current_sell_price??null;
-  $('pc-buy').textContent=bp!=null?bp.toFixed(4):'—';
-  $('pc-sell').textContent=sp!=null?sp.toFixed(4):'—';
-  const badge=$('pc-badge');
-  const cheap=cb?.is_cheap??d.is_cheap,exp=cb?.is_expensive??d.is_expensive;
-  badge.textContent=cheap?'tania':exp?'droga':'normalna';
-  badge.className='pc-badge '+(cheap?'badge-cheap':exp?'badge-exp':'badge-norm');
-  const nh=new Date(now.getTime()+3600000);
-  const nb=bt.find(p=>(p.time||p.start||'').slice(0,13)===nh.toISOString().slice(0,13))||bm[0];
-  $('pc-next').textContent=nb?nb.price.toFixed(4):'—';
-  renderHours(bt,bm);renderChart(bt,st,bm,sm);
+// ─── RENDER: DZIŚ ────────────────────────────────────────────────────────────
+function renderToday(data) {
+  const s = data.summary || {};
+  const mv = s.meter_values || s.meterValues || {};
+  const cost = s.cost || {};
+  const carbon = s.carbon || {};
+
+  const imp = mv.energy_active_import_register_total ?? mv.energy_active_import_total ?? null;
+  const exp = mv.energy_active_export_register_total ?? mv.energy_active_export_total ?? null;
+  const bal = mv.energy_balance_total ?? null;
+  const energyCost = cost.energy_active_import_register_cost_total ?? cost.energy_cost_total ?? null;
+  const distCost = cost.distribution_cost_total ?? null;
+  const vat = cost.vat_total ?? null;
+  const total = cost.total_cost_total ?? null;
+  const co2 = carbon.co2_total ?? carbon.carbon_total ?? null;
+
+  setText('t-import', imp!=null ? fmt(imp) : '—');
+  setText('t-export', exp!=null ? fmt(exp) : '—');
+  setText('t-balance', bal!=null ? fmt(bal) : '—');
+  setText('t-cost', energyCost!=null ? fmt(energyCost) : '—');
+  setText('t-dist', distCost!=null ? fmt(distCost) : '—');
+  setText('t-vat', vat!=null ? fmt(vat) : '—');
+  setText('t-total', total!=null ? fmt(total) : '—');
+  setText('t-carbon', co2!=null ? fmt(co2) : '—');
+
+  // Mirror to meter tab
+  setText('m-usage', imp!=null ? fmt(imp) : '—');
+  setText('m-cost', total!=null ? fmt(total) : '—');
+
+  // Hourly usage chart
+  const frames = data.frames || [];
+  const labels = frames.map(f => {
+    const h = new Date(f.start).getUTCHours();
+    return `${String(h).padStart(2,'0')}:00`;
+  });
+  const importData = frames.map(f => {
+    const mv = f.metrics?.meter_values || f.metrics?.meterValues || {};
+    return mv.energy_active_import_register ?? mv.energy_active_import ?? 0;
+  });
+  const exportData = frames.map(f => {
+    const mv = f.metrics?.meter_values || f.metrics?.meterValues || {};
+    return mv.energy_active_export_register ?? mv.energy_active_export ?? 0;
+  });
+
+  if (usageChart) usageChart.destroy();
+  const ctx = $('usage-chart')?.getContext('2d');
+  if (ctx && labels.length) {
+    usageChart = new Chart(ctx, {
+      type: 'bar',
+      data: { labels, datasets: [
+        { label: 'Import', data: importData, backgroundColor: 'rgba(240,224,64,.7)', borderRadius: 3 },
+        { label: 'Eksport', data: exportData, backgroundColor: 'rgba(56,189,248,.5)', borderRadius: 3 },
+      ]},
+      options: {
+        responsive: true, maintainAspectRatio: true,
+        plugins: { legend: { display: false }, tooltip: {
+          backgroundColor: '#141a24', titleColor: '#64748b', bodyColor: '#e2e8f0',
+          titleFont: { family: 'JetBrains Mono', size: 10 }, bodyFont: { family: 'JetBrains Mono', size: 11 },
+          callbacks: { label: c => ` ${c.dataset.label}: ${c.parsed.y.toFixed(3)} kWh` }
+        }},
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 9 } } },
+          y: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 }, callback: v => v.toFixed(2) } }
+        }
+      }
+    });
+  }
 }
-function renderMetrics(d){
-  const u=d.fae_total_usage??d.usage_kwh??null;
-  const s=d.rae_total??d.sell_kwh??null;
-  const b=d.energy_balance??null;
-  const c=d.fae_total_cost??d.cost_pln??null;
-  const setS=(id,val,unit)=>{
-    const el=$(id);if(!el)return;
-    const su=el.querySelector('.stat-unit');
-    el.innerHTML=(val!=null?val.toFixed(2):'—');
-    const s2=document.createElement('span');s2.className='stat-unit';s2.textContent=unit;el.appendChild(s2);
-    if(su&&!el.querySelector('.stat-unit'))el.appendChild(su);
+
+// ─── RENDER: CENY ────────────────────────────────────────────────────────────
+function renderPrices(today, tomorrow) {
+  const todayFrames = today?.frames || [];
+  const tomFrames = tomorrow?.frames || [];
+  const allFrames = [...todayFrames, ...tomFrames];
+
+  // Find current and next hour
+  const nowH = new Date().getUTCHours();
+  const liveFrame = todayFrames.find(f => f.is_live);
+  const curFrame = liveFrame || todayFrames.find(f => new Date(f.start).getUTCHours() === nowH);
+
+  const getPricing = (frame) => {
+    const p = frame?.metrics?.pricing || {};
+    return {
+      buy: p.buy_price ?? p.purchase_price ?? p.price ?? p.tge_price ?? null,
+      sell: p.sell_price ?? p.sale_price ?? null,
+    };
   };
-  setS('m-usage',u,'kWh');setS('m-cost',c,'PLN');
-  setS('p-usage',u,'kWh');setS('p-sell',s,'kWh');setS('p-balance',b,'kWh');setS('p-cost',c,'PLN');
-}
-function renderHours(today,tomorrow){
-  const g=$('hours-grid');if(!g)return;
-  const curH=new Date().toISOString().slice(0,13);
-  let html=today.map(p=>{const t=p.time||p.start||'';const h=t?new Date(t).getHours():'?';const cur=t.slice(0,13)===curH;const cls=cur?'current':p.is_cheap?'cheap':p.is_expensive?'expensive':'';return`<div class="hcell ${cls}"><div class="hcell-hour">${String(h).padStart(2,'0')}:00</div><div class="hcell-price">${p.price.toFixed(3)}</div></div>`;}).join('');
-  if(tomorrow?.length){html+=`<div class="tmr-sep">→ jutro</div>`;html+=tomorrow.map(p=>{const t=p.time||p.start||'';const h=t?new Date(t).getHours():'?';const cls=p.is_cheap?'cheap':p.is_expensive?'expensive':'';return`<div class="hcell ${cls}"><div class="hcell-hour">${String(h).padStart(2,'0')}:00</div><div class="hcell-price">${p.price.toFixed(3)}</div></div>`;}).join('');}
-  g.innerHTML=html;
-}
-function renderChart(bt,st,bm,sm){
-  const all=[...bt,...bm];if(!all.length)return;
-  const labels=all.map(p=>{const t=p.time||p.start;if(!t)return'';const d=new Date(t);return`${String(d.getHours()).padStart(2,'0')}:00`;});
-  const as=[...st,...sm];
-  if(priceChart)priceChart.destroy();
-  const ctx=$('price-chart')?.getContext('2d');if(!ctx)return;
-  priceChart=new Chart(ctx,{type:'line',data:{labels,datasets:[
-    {label:'Zakup',data:all.map(p=>p.price),borderColor:'#f0e040',backgroundColor:c=>{const g=c.chart.ctx.createLinearGradient(0,0,0,240);g.addColorStop(0,'rgba(240,224,64,.14)');g.addColorStop(1,'rgba(240,224,64,0)');return g;},borderWidth:2,fill:true,tension:.3,pointRadius:0,pointHoverRadius:4},
-    ...(as.length?[{label:'Sprzedaż',data:as.map(p=>p.price),borderColor:'#38bdf8',backgroundColor:'transparent',borderWidth:1.5,borderDash:[4,4],fill:false,tension:.3,pointRadius:0,pointHoverRadius:4}]:[])
-  ]},options:{responsive:true,maintainAspectRatio:true,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{backgroundColor:'#141a24',borderColor:'rgba(255,255,255,.07)',borderWidth:1,titleColor:'#64748b',bodyColor:'#e2e8f0',titleFont:{family:'JetBrains Mono',size:10},bodyFont:{family:'JetBrains Mono',size:11},callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y.toFixed(4)} PLN/kWh`}}},scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#64748b',font:{family:'JetBrains Mono',size:10},maxTicksLimit:24}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#64748b',font:{family:'JetBrains Mono',size:10},callback:v=>v.toFixed(2)}}}}});
+
+  const cur = getPricing(curFrame);
+  setText('p-buy', cur.buy!=null ? fmt(cur.buy,4) : '—');
+  setText('p-sell', cur.sell!=null ? fmt(cur.sell,4) : '—');
+
+  // Next hour price
+  const nextIdx = todayFrames.indexOf(curFrame) + 1;
+  const nextFrame = nextIdx < todayFrames.length ? todayFrames[nextIdx] : tomFrames[0];
+  const nextP = getPricing(nextFrame);
+  setText('p-next', nextP.buy!=null ? fmt(nextP.buy,4) : '—');
+
+  // Hours grid
+  const grid = $('hours-grid');
+  if (grid) {
+    let html = todayFrames.map(f => {
+      const h = new Date(f.start).getUTCHours();
+      const p = getPricing(f);
+      const cls = f.is_live ? 'live' : '';
+      return `<div class="hcell ${cls}">
+        <div class="hcell-hour">${String(h).padStart(2,'0')}:00</div>
+        <div class="hcell-price">${p.buy!=null ? p.buy.toFixed(3) : '—'}</div>
+      </div>`;
+    }).join('');
+    if (tomFrames.length) {
+      html += `<div style="grid-column:1/-1;text-align:center;font-size:.65rem;color:var(--muted);font-family:'JetBrains Mono',monospace;padding:5px 0 3px;border-top:1px solid var(--border);margin-top:3px">→ jutro</div>`;
+      html += tomFrames.map(f => {
+        const h = new Date(f.start).getUTCHours();
+        const p = getPricing(f);
+        return `<div class="hcell"><div class="hcell-hour">${String(h).padStart(2,'0')}:00</div><div class="hcell-price">${p.buy!=null ? p.buy.toFixed(3) : '—'}</div></div>`;
+      }).join('');
+    }
+    grid.innerHTML = html;
+  }
+
+  // Price chart
+  if (priceChart) priceChart.destroy();
+  const ctx = $('price-chart')?.getContext('2d');
+  if (ctx && allFrames.length) {
+    const labels = allFrames.map(f => `${String(new Date(f.start).getUTCHours()).padStart(2,'0')}:00`);
+    const buyData = allFrames.map(f => getPricing(f).buy);
+    const sellData = allFrames.map(f => getPricing(f).sell);
+    const hasSell = sellData.some(v => v!=null);
+
+    priceChart = new Chart(ctx, {
+      type: 'line',
+      data: { labels, datasets: [
+        { label: 'Zakup', data: buyData, borderColor: '#f0e040',
+          backgroundColor: c => { const g=c.chart.ctx.createLinearGradient(0,0,0,220); g.addColorStop(0,'rgba(240,224,64,.14)'); g.addColorStop(1,'rgba(240,224,64,0)'); return g; },
+          borderWidth: 2, fill: true, tension: .3, pointRadius: 0, pointHoverRadius: 4 },
+        ...(hasSell ? [{ label: 'Sprzedaż', data: sellData, borderColor: '#38bdf8', backgroundColor: 'transparent', borderWidth: 1.5, borderDash: [4,4], fill: false, tension: .3, pointRadius: 0, pointHoverRadius: 4 }] : []),
+      ]},
+      options: {
+        responsive: true, maintainAspectRatio: true,
+        interaction: { mode: 'index', intersect: false },
+        plugins: { legend: { display: false }, tooltip: {
+          backgroundColor: '#141a24', borderColor: 'rgba(255,255,255,.07)', borderWidth: 1,
+          titleColor: '#64748b', bodyColor: '#e2e8f0',
+          titleFont: { family: 'JetBrains Mono', size: 10 }, bodyFont: { family: 'JetBrains Mono', size: 11 },
+          callbacks: { label: c => ` ${c.dataset.label}: ${c.parsed.y!=null?c.parsed.y.toFixed(4):'-'} PLN/kWh` }
+        }},
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 }, maxTicksLimit: 24 } },
+          y: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 }, callback: v => v!=null?v.toFixed(2):'' } }
+        }
+      }
+    });
+  }
 }
 
-/* === LOCAL METER === */
-const ENDPOINTS=['/api/data','/api/status','/api/metrics','/status','/metrics','/data','/api/v1/data','/api/measurements','/api/realtime','/api/meter','/meter','/api/v1/measurements','/api/v1/status','/'];
+// ─── LOCAL METER ─────────────────────────────────────────────────────────────
+const LOCAL_ENDPOINTS = ['/api/data','/api/status','/api/metrics','/status','/metrics','/data','/api/v1/data','/api/measurements','/api/realtime','/api/meter','/'];
 
-async function tryEP(base,path){
-  const r=await fetch(base+path,{signal:AbortSignal.timeout(3000)});
-  if(!r.ok)throw new Error(r.status);
-  const ct=r.headers.get('content-type')||'';
-  if(!ct.includes('json'))throw new Error('not json');
-  const d=await r.json();
-  if(typeof d!=='object'||!d)throw new Error('empty');
+async function tryEP(base, path) {
+  const r = await fetch(base+path, { signal: AbortSignal.timeout(3000) });
+  if (!r.ok) throw new Error(r.status);
+  const ct = r.headers.get('content-type') || '';
+  if (!ct.includes('json')) throw new Error('not json');
+  const d = await r.json();
+  if (typeof d !== 'object' || !d) throw new Error('empty');
   return d;
 }
 
-async function connectLocal(){
-  const ip=$('meter-ip').value.trim();
-  const port=$('meter-port').value;
-  if(!ip){alert('Wpisz adres IP miernika');return;}
-  localStorage.setItem('pip',ip);
-  const proto=port==='443'||port==='8443'?'https':'http';
-  const base=`${proto}://${ip}:${port}`;
-  setLocalStatus('Szukam API...','load');
+async function connectLocal() {
+  const ip = $('meter-ip').value.trim();
+  const port = $('meter-port').value;
+  if (!ip) { alert('Wpisz adres IP miernika'); return; }
+  localStorage.setItem('pip', ip);
+  const proto = port==='443' ? 'https' : 'http';
+  const base = `${proto}://${ip}:${port}`;
+  setLocalStatus('Szukam API...', 'load');
 
-  let found=null,data=null;
-  for(const ep of ENDPOINTS){
-    try{data=await tryEP(base,ep);found=ep;break;}catch(e){}
+  let found=null, data=null;
+  for (const ep of LOCAL_ENDPOINTS) {
+    try { data = await tryEP(base, ep); found = ep; break; } catch(e) {}
   }
-  if(!found){
-    setLocalStatus('Brak odpowiedzi — sprawdź IP i port','err');
-    $('raw-local').textContent=`Nie znaleziono żadnego endpointu JSON na ${base}\n\nSprawdź:\n• Czy IP miernika jest poprawne\n• Czy jesteś w tej samej sieci\n• Czy kontener ma dostęp do sieci lokalnej (network_mode: host lub właściwe routing)`;
+  if (!found) {
+    setLocalStatus('Brak odpowiedzi', 'err');
+    $('raw-local').textContent = `Nie znaleziono endpointu JSON na ${base}`;
     return;
   }
-  $('raw-local').textContent=`Endpoint: ${base}${found}\n\n${JSON.stringify(data,null,2)}`;
-  setLocalStatus(`live → ${base}${found}`,'ok');
-  $('lstop-btn').style.display='';
+  $('raw-local').textContent = `${base}${found}\n\n${JSON.stringify(data,null,2)}`;
+  setLocalStatus('live', 'ok');
+  $('lstop-btn').style.display = '';
   renderPhases(data);
 
-  localInterval=setInterval(async()=>{
-    try{
-      const d=await tryEP(base,found);
-      $('raw-local').textContent=`Endpoint: ${base}${found}\n${new Date().toLocaleTimeString('pl-PL')}\n\n${JSON.stringify(d,null,2)}`;
+  localInterval = setInterval(async () => {
+    try {
+      const d = await tryEP(base, found);
+      $('raw-local').textContent = `${base}${found}\n${new Date().toLocaleTimeString('pl-PL')}\n\n${JSON.stringify(d,null,2)}`;
       renderPhases(d);
-    }catch(e){setLocalStatus('Utracono połączenie','err');stopLocal();}
-  },5000);
+    } catch(e) { setLocalStatus('Utracono połączenie', 'err'); stopLocal(); }
+  }, 5000);
 }
 
-function stopLocal(){
-  if(localInterval){clearInterval(localInterval);localInterval=null;}
-  $('lstop-btn').style.display='none';
-  setLocalStatus('offline','off');
+function stopLocal() {
+  if (localInterval) { clearInterval(localInterval); localInterval=null; }
+  $('lstop-btn').style.display = 'none';
+  setLocalStatus('offline', 'off');
 }
 
-function setLocalStatus(txt,s){
-  const dot=$('ldot'),badge=$('lbadge'),pb=$('phase-badge');
-  if(s==='ok'){dot.style.background='var(--green)';badge.className='live-badge';badge.textContent='live';pb.className='live-badge';pb.textContent='live • odśwież co 5s';}
-  else if(s==='load'){dot.style.background='var(--accent)';badge.className='live-badge';badge.textContent=txt;pb.className='live-badge off';pb.textContent='łączenie...';}
-  else{dot.style.background='var(--muted)';badge.className='live-badge off';badge.textContent=s==='err'?txt:'offline';pb.className='live-badge off';pb.textContent='brak danych';}
+function setLocalStatus(txt, s) {
+  const dot=$('ldot'), badge=$('lbadge'), pb=$('phase-badge');
+  if (s==='ok') { dot.style.background='var(--green)'; badge.className='live-badge'; badge.textContent='live'; pb.className='live-badge'; pb.textContent='live • co 5s'; }
+  else if (s==='load') { dot.style.background='var(--accent)'; badge.className='live-badge'; badge.textContent=txt; pb.className='live-badge off'; pb.textContent='łączenie...'; }
+  else { dot.style.background='var(--muted)'; badge.className='live-badge off'; badge.textContent=s==='err'?txt:'offline'; pb.className='live-badge off'; pb.textContent='brak danych'; }
 }
 
-function flatObj(o,pre='',r={}){
-  if(typeof o!=='object'||!o)return r;
-  for(const[k,v]of Object.entries(o)){const key=pre?`${pre}_${k}`:k;if(typeof v==='object'&&v&&!Array.isArray(v))flatObj(v,key,r);else r[key]=v;}
+function flatObj(o, pre='', r={}) {
+  if (typeof o!=='object'||!o) return r;
+  for (const [k,v] of Object.entries(o)) {
+    const key = pre ? `${pre}_${k}` : k;
+    if (typeof v==='object'&&v&&!Array.isArray(v)) flatObj(v,key,r);
+    else r[key] = v;
+  }
   return r;
 }
-function findVal(flat,...keys){
-  for(const k of keys)for(const[key,val]of Object.entries(flat))if(key.toLowerCase().includes(k.toLowerCase())&&typeof val==='number')return val;
+function findVal(flat, ...keys) {
+  for (const k of keys)
+    for (const [key,val] of Object.entries(flat))
+      if (key.toLowerCase().includes(k.toLowerCase()) && typeof val==='number') return val;
   return null;
 }
 
-function renderPhases(raw){
-  const f=flatObj(raw);
-  const L={
-    1:{v:findVal(f,'voltage_l1','v_l1','ul1','u1','volt_l1','voltage1'),a:findVal(f,'current_l1','i_l1','amp_l1','a_l1','current1','i1'),w:findVal(f,'power_l1','p_l1','w_l1','watt_l1','active_l1','activePowerL1'),pf:findVal(f,'pf_l1','power_factor_l1','cos_l1','factor1')},
-    2:{v:findVal(f,'voltage_l2','v_l2','ul2','u2','volt_l2','voltage2'),a:findVal(f,'current_l2','i_l2','amp_l2','a_l2','current2','i2'),w:findVal(f,'power_l2','p_l2','w_l2','watt_l2','active_l2','activePowerL2'),pf:findVal(f,'pf_l2','power_factor_l2','cos_l2','factor2')},
-    3:{v:findVal(f,'voltage_l3','v_l3','ul3','u3','volt_l3','voltage3'),a:findVal(f,'current_l3','i_l3','amp_l3','a_l3','current3','i3'),w:findVal(f,'power_l3','p_l3','w_l3','watt_l3','active_l3','activePowerL3'),pf:findVal(f,'pf_l3','power_factor_l3','cos_l3','factor3')},
+function renderPhases(raw) {
+  const f = flatObj(raw);
+  const L = {
+    1: { v:findVal(f,'voltage_l1','v_l1','ul1','u1'), a:findVal(f,'current_l1','i_l1','a_l1','i1'), w:findVal(f,'power_l1','p_l1','w_l1','active_l1'), pf:findVal(f,'pf_l1','factor_l1','cos_l1') },
+    2: { v:findVal(f,'voltage_l2','v_l2','ul2','u2'), a:findVal(f,'current_l2','i_l2','a_l2','i2'), w:findVal(f,'power_l2','p_l2','w_l2','active_l2'), pf:findVal(f,'pf_l2','factor_l2','cos_l2') },
+    3: { v:findVal(f,'voltage_l3','v_l3','ul3','u3'), a:findVal(f,'current_l3','i_l3','a_l3','i3'), w:findVal(f,'power_l3','p_l3','w_l3','active_l3'), pf:findVal(f,'pf_l3','factor_l3','cos_l3') },
   };
-  const freq=findVal(f,'frequency','freq','hz');
-  const totalW=findVal(f,'total_power','power_total','active_power_total','total_active_power','power','active_power');
+  const freq = findVal(f,'frequency','freq','hz');
+  const totalW = findVal(f,'total_power','power_total','active_power_total','power','active_power');
 
-  const V_NOM=230,A_MAX=25;
-  [1,2,3].forEach(n=>{
-    const id='l'+n,d=L[n];
-    setText(`${id}-v`,d.v!=null?fmt(d.v,1):'—');setText(`${id}-a`,d.a!=null?fmt(d.a,2):'—');
-    setText(`${id}-w`,d.w!=null?fmt(d.w,0):'—');setText(`${id}-pf`,d.pf!=null?fmt(d.pf,2):'—');
-    setBar(`${id}-vb`,d.v!=null?Math.min((d.v/V_NOM)*100,100):0);
-    setBar(`${id}-ab`,d.a!=null?Math.min((Math.abs(d.a)/A_MAX)*100,100):0);
+  [1,2,3].forEach(n => {
+    const id='l'+n, d=L[n];
+    setText(`${id}-v`, d.v!=null?fmt(d.v,1):'—');
+    setText(`${id}-a`, d.a!=null?fmt(d.a,2):'—');
+    setText(`${id}-w`, d.w!=null?fmt(d.w,0):'—');
+    setText(`${id}-pf`, d.pf!=null?fmt(d.pf,2):'—');
+    setBar(`${id}-vb`, d.v!=null?Math.min((d.v/230)*100,100):0);
+    setBar(`${id}-ab`, d.a!=null?Math.min((Math.abs(d.a)/25)*100,100):0);
   });
-  const ws=[L[1].w??0,L[2].w??0,L[3].w??0];
-  const tw=totalW!==null?totalW:ws.reduce((a,b)=>a+b,0);
-  setText('tot-w',tw.toFixed(0));setText('freq',freq!=null?fmt(freq,2):'—');
-  const maxW=Math.max(...ws,1);
-  ['l1','l2','l3'].forEach((id,i)=>{
-    const w=ws[i],pct=Math.min((Math.max(w,0)/maxW)*100,100);
-    const bar=$(`pb-${id}`);if(bar)bar.style.width=pct+'%';
-    const txt=$(`pb-${id}-t`);if(txt)txt.textContent=w>20?`${w.toFixed(0)}W`:'';
-    const tot=$(`pb-${id}-v`);if(tot)tot.textContent=`${w.toFixed(0)} W`;
+  const ws = [L[1].w??0, L[2].w??0, L[3].w??0];
+  const tw = totalW!==null ? totalW : ws.reduce((a,b)=>a+b,0);
+  setText('tot-w', tw.toFixed(0));
+  setText('freq', freq!=null?fmt(freq,2):'—');
+  const maxW = Math.max(...ws, 1);
+  ['l1','l2','l3'].forEach((id,i) => {
+    const w=ws[i], pct=Math.min((Math.max(w,0)/maxW)*100,100);
+    const bar=$(`pb-${id}`); if(bar) bar.style.width=pct+'%';
+    const t=$(`pb-${id}-t`); if(t) t.textContent=w>20?`${w.toFixed(0)}W`:'';
+    const tot=$(`pb-${id}-v`); if(tot) tot.textContent=`${w.toFixed(0)} W`;
   });
 }
 
-/* === BOOT === */
-window.addEventListener('load',()=>{
-  const env=getEnvConfig();
+// ─── BOOT ─────────────────────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  const cfg = window.PSTRYK_CONFIG || {};
+  const envKey = (cfg.apiKey && !cfg.apiKey.startsWith('$')) ? cfg.apiKey : '';
+  const envIp  = (cfg.meterIp && !cfg.meterIp.startsWith('$')) ? cfg.meterIp : '';
+  const envPort= (cfg.meterPort && !cfg.meterPort.startsWith('$')) ? cfg.meterPort : '';
 
-  // Pokaż status zmiennych env
-  const apiBadge=$('env-api-badge');
-  const ipBadge=$('env-ip-badge');
-  if(env.apiKey){apiBadge.textContent='PSTRYK_API_KEY: ✓ ustawiony';apiBadge.classList.remove('missing');}
-  else{apiBadge.textContent='PSTRYK_API_KEY: brak';}
-  if(env.meterIp){ipBadge.textContent=`PSTRYK_METER_IP: ${env.meterIp}`;ipBadge.classList.remove('missing');}
-  else{ipBadge.textContent='PSTRYK_METER_IP: brak';}
+  // Show env status badges
+  const envDiv = $('env-status');
+  envDiv.innerHTML =
+    `<span class="env-badge ${envKey?'env-ok':'env-miss'}">${envKey?'PSTRYK_API_KEY ✓':'PSTRYK_API_KEY: brak'}</span>` +
+    `<span class="env-badge ${envIp?'env-ok':'env-miss'}">${envIp?`PSTRYK_METER_IP: ${envIp}`:'PSTRYK_METER_IP: brak'}</span>`;
 
-  // Wypełnij pola z env lub localStorage
-  const savedKey=localStorage.getItem('pk');
-  const activeKey=env.apiKey||savedKey||'';
-  if(activeKey) $('api-key').value=activeKey;
+  const savedKey = localStorage.getItem('pk');
+  const activeKey = envKey || savedKey || '';
+  if (activeKey) $('api-key').value = activeKey;
 
-  const savedIp=env.meterIp||localStorage.getItem('pip')||'';
-  if(savedIp){
-    $('meter-ip').value=savedIp;
-    if(env.meterIp) {
-      $('lc-env-src').style.display='';
-    }
-  }
-  if(env.meterPort) $('meter-port').value=env.meterPort;
+  const savedIp = envIp || localStorage.getItem('pip') || '';
+  if (savedIp) $('meter-ip').value = savedIp;
+  if (envPort) $('meter-port').value = envPort;
 
-  $('raw-env').textContent=JSON.stringify({
-    PSTRYK_API_KEY: env.apiKey?'[ustawiony — ukryty]':'[brak]',
-    PSTRYK_METER_IP: env.meterIp||'[brak]',
-    PSTRYK_METER_PORT: env.meterPort||'[brak]',
-    source: window.PSTRYK_CONFIG?'env.js (Docker)':'brak (lokalnie)'
-  },null,2);
-
-  // Auto-login jeśli klucz dostępny
-  if(activeKey){apiKey=activeKey;handleLogin();}
+  if (activeKey) { apiKey = activeKey; handleLogin(); }
 });
 
-$('api-key').addEventListener('keydown',e=>{if(e.key==='Enter')handleLogin();});
+$('api-key').addEventListener('keydown', e => { if (e.key==='Enter') handleLogin(); });
 </script>
 </body>
 </html>
