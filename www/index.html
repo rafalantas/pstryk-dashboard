@@ -630,16 +630,15 @@ function renderPrices(today, tomorrow) {
 }
 
 // ─── LOCAL METER ─────────────────────────────────────────────────────────────
-const LOCAL_ENDPOINTS = ['/api/data','/api/status','/api/metrics','/status','/metrics','/data','/api/v1/data','/api/measurements','/api/realtime','/api/meter','/'];
-
-async function tryEP(base, path) {
-  const r = await fetch(base+path, { signal: AbortSignal.timeout(3000) });
+// BleBox /state zwraca dwa JSONy sklejone — wyciągamy multiSensor
+async function fetchBleBox(base) {
+  const r = await fetch(base + '/state', { signal: AbortSignal.timeout(4000) });
   if (!r.ok) throw new Error(r.status);
-  const ct = r.headers.get('content-type') || '';
-  if (!ct.includes('json')) throw new Error('not json');
-  const d = await r.json();
-  if (typeof d !== 'object' || !d) throw new Error('empty');
-  return d;
+  const text = await r.text();
+  // Wyciągnij część {"multiSensor":{...}}
+  const idx = text.indexOf('{"multiSensor"');
+  if (idx === -1) throw new Error('no multiSensor');
+  return JSON.parse(text.slice(idx));
 }
 
 async function connectLocal() {
@@ -649,26 +648,26 @@ async function connectLocal() {
   localStorage.setItem('pip', ip);
   const proto = port==='443' ? 'https' : 'http';
   const base = `${proto}://${ip}:${port}`;
-  setLocalStatus('Szukam API...', 'load');
+  setLocalStatus('Łączenie z BleBox...', 'load');
 
-  let found=null, data=null;
-  for (const ep of LOCAL_ENDPOINTS) {
-    try { data = await tryEP(base, ep); found = ep; break; } catch(e) {}
-  }
-  if (!found) {
-    setLocalStatus('Brak odpowiedzi', 'err');
-    $('raw-local').textContent = `Nie znaleziono endpointu JSON na ${base}`;
+  let data;
+  try {
+    data = await fetchBleBox(base);
+  } catch(e) {
+    setLocalStatus('Brak odpowiedzi — sprawdź IP', 'err');
+    $('raw-local').textContent = `Błąd połączenia z ${base}/state: ${e.message}`;
     return;
   }
-  $('raw-local').textContent = `${base}${found}\n\n${JSON.stringify(data,null,2)}`;
+
+  $('raw-local').textContent = `${base}/state\n\n${JSON.stringify(data,null,2)}`;
   setLocalStatus('live', 'ok');
   $('lstop-btn').style.display = '';
   renderPhases(data);
 
   localInterval = setInterval(async () => {
     try {
-      const d = await tryEP(base, found);
-      $('raw-local').textContent = `${base}${found}\n${new Date().toLocaleTimeString('pl-PL')}\n\n${JSON.stringify(d,null,2)}`;
+      const d = await fetchBleBox(base);
+      $('raw-local').textContent = `${base}/state\n${new Date().toLocaleTimeString('pl-PL')}\n\n${JSON.stringify(d,null,2)}`;
       renderPhases(d);
     } catch(e) { setLocalStatus('Utracono połączenie', 'err'); stopLocal(); }
   }, 5000);
@@ -687,50 +686,58 @@ function setLocalStatus(txt, s) {
   else { dot.style.background='var(--muted)'; badge.className='live-badge off'; badge.textContent=s==='err'?txt:'offline'; pb.className='live-badge off'; pb.textContent='brak danych'; }
 }
 
-function flatObj(o, pre='', r={}) {
-  if (typeof o!=='object'||!o) return r;
-  for (const [k,v] of Object.entries(o)) {
-    const key = pre ? `${pre}_${k}` : k;
-    if (typeof v==='object'&&v&&!Array.isArray(v)) flatObj(v,key,r);
-    else r[key] = v;
-  }
-  return r;
-}
-function findVal(flat, ...keys) {
-  for (const k of keys)
-    for (const [key,val] of Object.entries(flat))
-      if (key.toLowerCase().includes(k.toLowerCase()) && typeof val==='number') return val;
-  return null;
+// ─── BleBox PstrykEnergyMeter parser ──────────────────────────────────────────
+// id=0: suma, id=1: L1, id=2: L2, id=3: L3
+// voltage /10=V, current /1000=A, activePower=W, frequency /1000=Hz
+function parseBleBox(data) {
+  const sensors = data?.multiSensor?.sensors || [];
+  const get = (id, type) => { const s = sensors.find(s => s.id===id && s.type===type); return s?.value ?? null; };
+  const sc = (v, f) => v!==null ? v/f : null;
+
+  return {
+    total: {
+      w:    get(0, 'activePower'),
+      freq: sc(get(0, 'frequency'), 1000),
+      fwdE: sc(get(0, 'forwardActiveEnergy'), 100),
+      revE: sc(get(0, 'reverseActiveEnergy'), 100),
+    },
+    phases: [1,2,3].map(n => ({
+      v:  sc(get(n, 'voltage'),  10),
+      a:  sc(get(n, 'current'),  1000),
+      w:  get(n, 'activePower'),
+      pf: (() => { const ap=get(n,'activePower'), sp=get(n,'apparentPower'); return (ap!==null&&sp&&sp!==0) ? ap/sp : null; })(),
+      reactiveW: get(n, 'reactivePower'),
+      apparentW: get(n, 'apparentPower'),
+    })),
+  };
 }
 
 function renderPhases(raw) {
-  const f = flatObj(raw);
-  const L = {
-    1: { v:findVal(f,'voltage_l1','v_l1','ul1','u1'), a:findVal(f,'current_l1','i_l1','a_l1','i1'), w:findVal(f,'power_l1','p_l1','w_l1','active_l1'), pf:findVal(f,'pf_l1','factor_l1','cos_l1') },
-    2: { v:findVal(f,'voltage_l2','v_l2','ul2','u2'), a:findVal(f,'current_l2','i_l2','a_l2','i2'), w:findVal(f,'power_l2','p_l2','w_l2','active_l2'), pf:findVal(f,'pf_l2','factor_l2','cos_l2') },
-    3: { v:findVal(f,'voltage_l3','v_l3','ul3','u3'), a:findVal(f,'current_l3','i_l3','a_l3','i3'), w:findVal(f,'power_l3','p_l3','w_l3','active_l3'), pf:findVal(f,'pf_l3','factor_l3','cos_l3') },
-  };
-  const freq = findVal(f,'frequency','freq','hz');
-  const totalW = findVal(f,'total_power','power_total','active_power_total','power','active_power');
+  const d = parseBleBox(raw);
+  const phases = d.phases;
 
-  [1,2,3].forEach(n => {
-    const id='l'+n, d=L[n];
-    setText(`${id}-v`, d.v!=null?fmt(d.v,1):'—');
-    setText(`${id}-a`, d.a!=null?fmt(d.a,2):'—');
-    setText(`${id}-w`, d.w!=null?fmt(d.w,0):'—');
-    setText(`${id}-pf`, d.pf!=null?fmt(d.pf,2):'—');
-    setBar(`${id}-vb`, d.v!=null?Math.min((d.v/230)*100,100):0);
-    setBar(`${id}-ab`, d.a!=null?Math.min((Math.abs(d.a)/25)*100,100):0);
+  [0,1,2].forEach(i => {
+    const id = 'l'+(i+1), ph = phases[i];
+    setText(`${id}-v`, ph.v!=null ? fmt(ph.v,1) : '—');
+    setText(`${id}-a`, ph.a!=null ? fmt(Math.abs(ph.a),2) : '—');
+    setText(`${id}-w`, ph.w!=null ? fmt(ph.w,0) : '—');
+    setText(`${id}-pf`, ph.pf!=null ? fmt(Math.abs(ph.pf),2) : '—');
+    setBar(`${id}-vb`, ph.v!=null ? Math.min((ph.v/240)*100,100) : 0);
+    setBar(`${id}-ab`, ph.a!=null ? Math.min((Math.abs(ph.a)/25)*100,100) : 0);
   });
-  const ws = [L[1].w??0, L[2].w??0, L[3].w??0];
-  const tw = totalW!==null ? totalW : ws.reduce((a,b)=>a+b,0);
+
+  const tw = d.total.w ?? phases.reduce((s,p)=>s+(p.w??0), 0);
   setText('tot-w', tw.toFixed(0));
-  setText('freq', freq!=null?fmt(freq,2):'—');
-  const maxW = Math.max(...ws, 1);
+  setText('freq', d.total.freq!=null ? fmt(d.total.freq,2) : '—');
+
+  // Power bars (handle negative = export)
+  const ws = phases.map(p => p.w ?? 0);
+  const maxAbs = Math.max(...ws.map(Math.abs), 1);
   ['l1','l2','l3'].forEach((id,i) => {
-    const w=ws[i], pct=Math.min((Math.max(w,0)/maxW)*100,100);
-    const bar=$(`pb-${id}`); if(bar) bar.style.width=pct+'%';
-    const t=$(`pb-${id}-t`); if(t) t.textContent=w>20?`${w.toFixed(0)}W`:'';
+    const w = ws[i];
+    const pct = Math.min((Math.abs(w)/maxAbs)*100, 100);
+    const bar=$(`pb-${id}`); if(bar) { bar.style.width=pct+'%'; bar.style.opacity = w<0?'0.6':'1'; }
+    const t=$(`pb-${id}-t`); if(t) t.textContent=Math.abs(w)>10?`${w.toFixed(0)}W`:'';
     const tot=$(`pb-${id}-v`); if(tot) tot.textContent=`${w.toFixed(0)} W`;
   });
 }
