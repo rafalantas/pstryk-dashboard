@@ -21,7 +21,7 @@ services:
       - PSTRYK_METER_PORT=${PSTRYK_METER_PORT:-80}
  
     ports:
-      - "${DASHBOARD_PORT:-8080}:80"
+      - "${DASHBOARD_PORT:-8090}:80"
  
     # network_mode: host NIE jest potrzebny — kontener tylko serwuje pliki HTML/JS.
     # To przeglądarka użytkownika łączy się z miernikiem po lokalnym IP, nie kontener.
