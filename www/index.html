@@ -364,7 +364,7 @@ input:focus{border-color:var(--accent)}
 <script>
 // ─── CONFIG ──────────────────────────────────────────────────────────────────
 const PROXY = '/pstryk-api';  // nginx proxy → https://api.pstryk.pl/integrations
-const TZ = 'Europe/Warsaw';
+const TZ = (window.PSTRYK_CONFIG?.tz && !window.PSTRYK_CONFIG.tz.startsWith('$')) ? window.PSTRYK_CONFIG.tz : 'Europe/Warsaw';
 
 let apiKey = '';
 let usageChart = null, priceChart = null, localInterval = null;
@@ -375,16 +375,33 @@ const setText = (id, v) => { const e=$(id); if(e) e.textContent=v; };
 const setBar = (id, pct) => { const e=$(id); if(e) e.style.width=Math.min(Math.max(pct,0),100)+'%'; };
 const fmt = (v, d=2) => v!=null ? (+v).toFixed(d) : '—';
 
-function todayUTC() {
+// Lokalna godzina z timestampa (wyświetlana w strefie przeglądarki = Warsaw)
+function localHour(isoStr) {
+  return new Date(isoStr).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: TZ });
+}
+
+// Buduje window_start/end jako UTC odpowiadający początku/końcu dnia w Warsaw
+function dayWindowUTC(offsetDays = 0) {
   const now = new Date();
-  const y = now.getUTCFullYear(), m = String(now.getUTCMonth()+1).padStart(2,'0'), d = String(now.getUTCDate()).padStart(2,'0');
-  return { start: `${y}-${m}-${d}T00:00:00Z`, end: `${y}-${m}-${d}T23:59:59Z` };
+  // Znajdź północ w Warsaw (jako ISO string)
+  const warsawNow = new Date(now.toLocaleString('en-US', { timeZone: TZ }));
+  const warsawMidnight = new Date(warsawNow);
+  warsawMidnight.setHours(0, 0, 0, 0);
+  warsawMidnight.setDate(warsawMidnight.getDate() + offsetDays);
+  const warsawEnd = new Date(warsawMidnight);
+  warsawEnd.setHours(23, 59, 59, 999);
+
+  // Przelicz offset Warsaw → UTC
+  const tzOffset = now.getTime() - warsawNow.getTime();
+  const startUTC = new Date(warsawMidnight.getTime() + tzOffset);
+  const endUTC   = new Date(warsawEnd.getTime()      + tzOffset);
+
+  const iso = d => d.toISOString().replace(/\.\d{3}Z$/, 'Z');
+  return { start: iso(startUTC), end: iso(endUTC) };
 }
-function tomorrowUTC() {
-  const tom = new Date(Date.now() + 86400000);
-  const y = tom.getUTCFullYear(), m = String(tom.getUTCMonth()+1).padStart(2,'0'), d = String(tom.getUTCDate()).padStart(2,'0');
-  return { start: `${y}-${m}-${d}T00:00:00Z`, end: `${y}-${m}-${d}T23:59:59Z` };
-}
+
+function todayUTC()    { return dayWindowUTC(0);  }
+function tomorrowUTC() { return dayWindowUTC(1);  }
 
 // ─── API ─────────────────────────────────────────────────────────────────────
 function apiHeaders() {
@@ -523,10 +540,7 @@ function renderToday(data) {
 
   // Hourly usage chart
   const frames = data.frames || [];
-  const labels = frames.map(f => {
-    const h = new Date(f.start).getUTCHours();
-    return `${String(h).padStart(2,'0')}:00`;
-  });
+  const labels = frames.map(f => localHour(f.start));
   const importData = frames.map(f => {
     const mv = f.metrics?.meter_values || f.metrics?.meterValues || {};
     return mv.energy_active_import_register ?? mv.energy_active_import ?? 0;
@@ -594,20 +608,20 @@ function renderPrices(today, tomorrow) {
   const grid = $('hours-grid');
   if (grid) {
     let html = todayFrames.map(f => {
-      const h = new Date(f.start).getUTCHours();
+      const h = localHour(f.start);
       const p = getPricing(f);
       const cls = f.is_live ? 'live' : '';
       return `<div class="hcell ${cls}">
-        <div class="hcell-hour">${String(h).padStart(2,'0')}:00</div>
+        <div class="hcell-hour">${h}</div>
         <div class="hcell-price">${p.buy!=null ? p.buy.toFixed(3) : '—'}</div>
       </div>`;
     }).join('');
     if (tomFrames.length) {
       html += `<div style="grid-column:1/-1;text-align:center;font-size:.65rem;color:var(--muted);font-family:'JetBrains Mono',monospace;padding:5px 0 3px;border-top:1px solid var(--border);margin-top:3px">→ jutro</div>`;
       html += tomFrames.map(f => {
-        const h = new Date(f.start).getUTCHours();
+        const h = localHour(f.start);
         const p = getPricing(f);
-        return `<div class="hcell"><div class="hcell-hour">${String(h).padStart(2,'0')}:00</div><div class="hcell-price">${p.buy!=null ? p.buy.toFixed(3) : '—'}</div></div>`;
+        return `<div class="hcell"><div class="hcell-hour">${h}</div><div class="hcell-price">${p.buy!=null ? p.buy.toFixed(3) : '—'}</div></div>`;
       }).join('');
     }
     grid.innerHTML = html;
@@ -617,7 +631,7 @@ function renderPrices(today, tomorrow) {
   if (priceChart) priceChart.destroy();
   const ctx = $('price-chart')?.getContext('2d');
   if (ctx && allFrames.length) {
-    const labels = allFrames.map(f => `${String(new Date(f.start).getUTCHours()).padStart(2,'0')}:00`);
+    const labels = allFrames.map(f => localHour(f.start));
     const buyData = allFrames.map(f => getPricing(f).buy);
     const sellData = allFrames.map(f => getPricing(f).sell);
     const hasSell = sellData.some(v => v!=null);
