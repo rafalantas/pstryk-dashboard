@@ -5,31 +5,38 @@ services:
       dockerfile: Dockerfile
     container_name: pstryk-dashboard
     restart: unless-stopped
- 
-    # Portainer buduje obraz prosto z tego repo — bez potrzeby GHCR / GitHub Actions
-    # W Portainer → Stacks → Add stack → Repository → podaj URL repo
- 
+
     environment:
-      # ── Pstryk Cloud API ──────────────────────────────────────────────────
-      # Klucz API: aplikacja Pstryk → Konto → Urządzenia i integracje → Klucz API
       - PSTRYK_API_KEY=${PSTRYK_API_KEY}
- 
-      # ── Lokalny miernik (dane fazowe L1/L2/L3) ───────────────────────────
-      # Adres IP miernika Pstryk w Twojej sieci LAN
-      - PSTRYK_METER_IP=${PSTRYK_METER_IP:-}
-      # Port API miernika (zazwyczaj 80)
+      - PSTRYK_METER_IP=${PSTRYK_METER_IP:-192.168.1.182}
       - PSTRYK_METER_PORT=${PSTRYK_METER_PORT:-80}
- 
+
+    # Port lokalny — opcjonalny, do testów bez Cloudflare
+    # Zakomentuj jeśli chcesz tylko przez Cloudflare Tunnel
     ports:
-      - "${DASHBOARD_PORT:-8090}:80"
- 
-    # network_mode: host NIE jest potrzebny — kontener tylko serwuje pliki HTML/JS.
-    # To przeglądarka użytkownika łączy się z miernikiem po lokalnym IP, nie kontener.
- 
+      - "${DASHBOARD_PORT:-8081}:80"
+
+    networks:
+      - pstryk-net
+
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:80/env.js || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 10s
- 
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: pstryk-cloudflared
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      pstryk-dashboard:
+        condition: service_healthy
+    networks:
+      - pstryk-net
+
+networks:
+  pstryk-net:
+    driver: bridge
