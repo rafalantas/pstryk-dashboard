@@ -354,23 +354,38 @@ function getEnvConfig() {
 /* === AUTH === */
 function getH(){return{'Authorization':`Token ${apiKey}`,'Content-Type':'application/json'};}
 async function apiGet(path){
-  const r=await fetch(`${BASE}${path}`,{headers:getH()});
-  if(!r.ok) throw new Error(r.status);
+  let r;
+  try {
+    r = await fetch(`${BASE}${path}`, {headers: getH()});
+  } catch(e) {
+    throw new Error('NETWORK: ' + e.message);
+  }
+  if (!r.ok) throw new Error('HTTP ' + r.status);
   return r.json();
 }
 
 async function handleLogin() {
-  const btn=$('login-btn'),err=$('auth-err');
-  apiKey=$('api-key').value.trim();
-  if(!apiKey) return;
-  btn.disabled=true;btn.textContent='Łączenie...';err.style.display='none';
+  const btn=$('login-btn'), err=$('auth-err');
+  apiKey = $('api-key').value.trim();
+  if (!apiKey) return;
+  btn.disabled=true; btn.textContent='Łączenie...'; err.style.display='none';
   try {
-    const d=await apiGet('/meters/');
-    meters=Array.isArray(d)?d:(d.results||[]);
-    if(!meters.length) throw new Error();
-    localStorage.setItem('pk',apiKey);
+    const d = await apiGet('/meters/');
+    meters = Array.isArray(d) ? d : (d.results || []);
+    if (!meters.length) throw new Error('Brak liczników na koncie');
+    localStorage.setItem('pk', apiKey);
     initDash();
-  } catch(e){err.style.display='block';btn.disabled=false;btn.textContent='Połącz →';}
+  } catch(e) {
+    let msg = 'Błąd: ' + e.message;
+    if (e.message.includes('NETWORK')) msg = 'Brak połączenia z proxy nginx. Sprawdź czy kontener działa.';
+    else if (e.message.includes('401')) msg = 'Błąd 401 — nieprawidłowy klucz API.';
+    else if (e.message.includes('403')) msg = 'Błąd 403 — brak uprawnień.';
+    else if (e.message.includes('404')) msg = 'Błąd 404 — nie znaleziono endpointu. Sprawdź nginx.conf.';
+    else if (e.message.includes('502') || e.message.includes('503')) msg = 'Błąd 502/503 — nginx nie może połączyć się z api.pstryk.pl.';
+    err.textContent = msg;
+    err.style.display='block';
+    btn.disabled=false; btn.textContent='Połącz →';
+  }
 }
 
 function logout(){
