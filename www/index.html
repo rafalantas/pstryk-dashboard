@@ -630,44 +630,40 @@ function renderPrices(today, tomorrow) {
 }
 
 // ─── LOCAL METER ─────────────────────────────────────────────────────────────
+// Proxy nginx → miernik BleBox (/meter/ → http://PSTRYK_METER_IP:PORT/)
 // BleBox /state zwraca dwa JSONy sklejone — wyciągamy multiSensor
-async function fetchBleBox(base) {
-  const r = await fetch(base + '/state', { signal: AbortSignal.timeout(4000) });
-  if (!r.ok) throw new Error(r.status);
+async function fetchBleBox() {
+  const r = await fetch('/meter/state', { signal: AbortSignal.timeout(4000) });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
   const text = await r.text();
-  // Wyciągnij część {"multiSensor":{...}}
   const idx = text.indexOf('{"multiSensor"');
-  if (idx === -1) throw new Error('no multiSensor');
+  if (idx === -1) throw new Error('brak sekcji multiSensor');
   return JSON.parse(text.slice(idx));
 }
 
 async function connectLocal() {
-  const ip = $('meter-ip').value.trim();
-  const port = $('meter-port').value;
-  if (!ip) { alert('Wpisz adres IP miernika'); return; }
-  localStorage.setItem('pip', ip);
-  const proto = port==='443' ? 'https' : 'http';
-  const base = `${proto}://${ip}:${port}`;
-  setLocalStatus('Łączenie z BleBox...', 'load');
+  // IP wyświetlamy informacyjnie — nginx proxy jest skonfigurowany przez Portainer env
+  const ip = $('meter-ip').value.trim() || 'z env PSTRYK_METER_IP';
+  setLocalStatus('Łączenie...', 'load');
 
   let data;
   try {
-    data = await fetchBleBox(base);
+    data = await fetchBleBox();
   } catch(e) {
-    setLocalStatus('Brak odpowiedzi — sprawdź IP', 'err');
-    $('raw-local').textContent = `Błąd połączenia z ${base}/state: ${e.message}`;
+    setLocalStatus('Brak odpowiedzi', 'err');
+    $('raw-local').textContent = `Błąd /meter/state: ${e.message}\n\nSprawdź czy PSTRYK_METER_IP=${ip} jest ustawiony w Portainerze i kontener został przebudowany.`;
     return;
   }
 
-  $('raw-local').textContent = `${base}/state\n\n${JSON.stringify(data,null,2)}`;
+  $('raw-local').textContent = `/meter/state (proxy → ${ip})\n\n${JSON.stringify(data,null,2)}`;
   setLocalStatus('live', 'ok');
   $('lstop-btn').style.display = '';
   renderPhases(data);
 
   localInterval = setInterval(async () => {
     try {
-      const d = await fetchBleBox(base);
-      $('raw-local').textContent = `${base}/state\n${new Date().toLocaleTimeString('pl-PL')}\n\n${JSON.stringify(d,null,2)}`;
+      const d = await fetchBleBox();
+      $('raw-local').textContent = `/meter/state\n${new Date().toLocaleTimeString('pl-PL')}\n\n${JSON.stringify(d,null,2)}`;
       renderPhases(d);
     } catch(e) { setLocalStatus('Utracono połączenie', 'err'); stopLocal(); }
   }, 5000);
