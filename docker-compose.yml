@@ -1,25 +1,19 @@
 services:
   pstryk-dashboard:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/rafalantas/pstryk-dashboard:latest
     container_name: pstryk-dashboard
     restart: unless-stopped
-
     environment:
       - TZ=Europe/Warsaw
       - PSTRYK_API_KEY=${PSTRYK_API_KEY}
       - PSTRYK_METER_IP=${PSTRYK_METER_IP:-192.168.1.182}
       - PSTRYK_METER_PORT=${PSTRYK_METER_PORT:-80}
-
     # Port lokalny — opcjonalny, do testów bez Cloudflare
     # Zakomentuj jeśli chcesz tylko przez Cloudflare Tunnel
     ports:
       - "${DASHBOARD_PORT:-8081}:80"
-
     networks:
       - pstryk-net
-
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:80/env.js || exit 1"]
       interval: 30s
